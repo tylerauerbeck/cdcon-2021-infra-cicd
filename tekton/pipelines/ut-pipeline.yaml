@@ -1,0 +1,127 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: cdcon-dns-ut 
+spec:
+  workspaces:
+  - name: ansible-playbooks
+    description: |
+      This workspace will contain ansible playbooks
+  - name: shared-data
+    description: |
+      This workspace will receive the cloned git repo and be passed
+      to the next Task for the repo's README.md file to be read.
+  tasks:
+     - name: get-playbooks
+       taskRef: 
+         name: git-clone
+       workspaces:
+       - name: output
+         workspace: ansible-playbooks
+       params:
+       - name: url
+         value: https://github.com/tylerauerbeck/cdcon-2021-infra-cicd
+       - name: revision
+         value: "main"
+       - name: deleteExisting
+         value: "true"
+     - name: fetch-repo
+       taskRef:
+         name: git-clone
+       workspaces:
+       - name: output
+         workspace: shared-data
+       params:
+       - name: url
+         value: https://github.com/redhat-cop/infra-ansible
+       - name: revision
+         value: "v2.0.4"
+       - name: deleteExisting
+         value: "true"
+     - name: lint-dns
+       workspaces:
+       - name: output
+         workspace: shared-data
+       taskRef:
+         name: ansible-lint
+       params:
+         - name: SKIP_LIST
+           value: "106,206,208,301,303,305"
+         - name: ARGS
+           value: ["$(workspaces.output.path)/roles/dns/config-dns-server-bind/"]
+       runAfter:
+         - fetch-repo
+##Commented out for time
+##     - name: create-vmi
+##       taskRef:
+##         name: openshift-client
+##       params:
+##         - name: ARGS
+##           value: ["apply","-f","https://raw.githubusercontent.com/tylerauerbeck/rhtr-2020-infra-cicd/main/cnv/fedora32.yaml"]
+##       runAfter:
+##         - lint-dns
+##     - name: expose-vmi-ssh
+##       taskRef:
+##         name: virtctl
+##       params:
+##         - name: ARGS
+##           value: ["expose","vmi","vmi-fedora-1","--name=vmi-fedora","--port=22","-n","cnv-tekton-$(tasks.create-id.results.pipeline-id)"] 
+##       runAfter:
+##         - create-vmi
+##     - name: expose-vmi-ssh
+##       taskRef: 
+##         name: openshift-client
+##       params:
+##         - name: ARGS
+##           value:
+##             - create
+##             - service
+##             - clusterip
+##             - vmi-fedora
+##             - --tcp=22
+##       runAfter:
+##         - create-vmi
+## This is cheating. We're just outright waiting for 3 minutes to give the VM time to stand up
+##     - name: wait-for-vm
+##       taskRef:
+##         name: sleep
+##       params:
+##         - name: sleepSeconds
+##           value: "180"
+##       runAfter:
+##         - create-vmi
+#     - name: run-ansible
+#       workspaces:
+#         - name: playbooks
+#           workspace: ansible-playbooks
+#       taskSpec:
+#         workspaces:
+#           - name: playbooks
+#             description: place that holds the playbooks
+#         steps:
+#           - name: requirements
+#             image: quay.io/tauerbec/ansible 
+#             script: |
+#               #!/bin/bash
+#               set -e
+#               ansible-galaxy install -r $(workspaces.playbooks.path)/ansible/requirements.yml -p $(workspaces.playbooks.path)/ansible/roles
+#               chmod 700 $(workspaces.playbooks.path)/ansible/files/id_rsa
+#           - name: get-ip
+#             image: quay.io/openshift/origin-cli
+#             script: |
+#               #!/bin/bash
+#               IP=$(oc get vmi vmi-fedora-1 -o=jsonpath='{.status.interfaces[0].ipAddress}')
+#               echo "[dns-server]" > $(workspaces.playbooks.path)/ansible/inventory/hosts
+#               echo $IP >> $(workspaces.playbooks.path)/ansible/inventory/hosts
+#               chmod 700 $(workspaces.playbooks.path)/ansible/files/id_rsa
+#           - name: run-playbook
+#             image: quay.io/tauerbec/ansible
+#             command: ["/usr/local/bin/script.sh"]
+#             args:
+#               - ansible-playbook 
+#               - -i 
+#               - $(workspaces.playbooks.path)/ansible/inventory 
+#               - $(workspaces.playbooks.path)/ansible/playbook.yml
+#       runAfter:
+##         - wait-for-vm
+#         - get-playbooks

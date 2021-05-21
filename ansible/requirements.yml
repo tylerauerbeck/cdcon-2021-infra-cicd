@@ -1,0 +1,4 @@
+---
+
+- src: https://github.com/tylerauerbeck/infra-ansible
+  version: py3-config-dns-server-bind

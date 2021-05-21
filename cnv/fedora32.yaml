@@ -1,0 +1,54 @@
+---
+apiVersion: kubevirt.io/v1alpha3
+kind: VirtualMachineInstance
+metadata:
+  labels:
+    flavor: vmi-fedora-1
+  name: vmi-fedora-1
+spec:
+  readinessProbe:
+    tcpSocket:
+      port: 22
+    initialDelaySeconds: 120
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 10
+    successThreshold: 1 
+  networks:
+  - name: default
+    pod: {}
+  domain:
+    devices:
+      interfaces:
+        - name: default
+          masquerade: {}
+      disks:
+      - disk:
+          bus: virtio
+        name: containerdisk
+      - disk:
+          bus: virtio
+        name: cloudinitdisk
+      rng: {}
+    machine:
+      type: ""
+    resources:
+      requests:
+        memory: 8Gi
+        cpu: "2"
+  terminationGracePeriodSeconds: 0
+  volumes:
+  - containerDisk:
+      image: kubevirt/fedora-cloud-container-disk-demo:v0.32.0
+    name: containerdisk
+  - cloudInitNoCloud:
+      userData: |
+        #cloud-config
+        hostname: fedora-0
+        password: fedora
+        chpasswd: { expire: False }
+        ssh_pwauth: True
+        disable_root: false
+        ssh_authorized_keys:
+          - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDsYL8SnJf3blzXmsqJrdyz8RF88W+k9tv/5muoL9ieUGpI67cCKbzCInfKRiuMaDd51D8f+ezZzwx6x/sSbhaDIA90cPBCJIVXY3sVLTSIYK+EzfzDdgYBdpphsRCapwK++5Yev68NT/02BJRbqXhNrYcE4bj2GEQX6Tq8n3LqOYg3j5TvmCBvxut7qztn16rNHFBFF2K/AEavzkyFrzaddFAdVzmV79zBAhCYwoRWhXffMr0NxihxdbglT7qNRtJbOlvBgbYinn2rSsXrSF+1TdCHk3Uo+H5q2sfSDtMQCN32Oh+bCG/zxwL8p2hbdC6AKIk3LzICTqFa+gRCvOWR 
+    name: cloudinitdisk

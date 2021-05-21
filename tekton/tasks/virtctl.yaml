@@ -1,0 +1,27 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: virtctl
+  labels:
+    app.kubernetes.io/version: "0.1"
+  annotations:
+    tekton.dev/tags: cli
+    tekton.dev/displayName: "virtctl cli"
+
+spec:
+  description: >-
+    This task performs operations on KubeVirt resources using virtctl
+
+  params:
+  - name: virtctl-image
+    description: virtctl CLI container image to run this task
+    default: quay.io/tauerbec/virtctl:latest
+  - name: ARGS
+    type: array
+    description: virtctl CLI arguments to run
+  steps:
+    - name: virtctl
+      image: "$(params.virtctl-image)"
+      command: ["/usr/local/bin/virtctl"]
+      args: ["$(params.ARGS)"]

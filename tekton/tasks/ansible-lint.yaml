@@ -1,0 +1,33 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: ansible-lint 
+  labels:
+    app.kubernetes.io/version: "0.1"
+  annotations:
+    tekton.dev/tags: cli
+    tekton.dev/displayName: "ansible-lint cli"
+
+spec:
+  description: >-
+    This task performs linting on ansible resources using ansible-lint CLI
+
+  workspaces:
+    - name: output
+      description: The git repo will be cloned onto the volume backing this workspace
+  params:
+  - name: ansible-lint-image
+    description: virtctl CLI container image to run this task
+    default: quay.io/tauerbec/ansible-lint:latest
+  - name: SKIP_LIST
+    type: string
+    default: "0"
+  - name: ARGS
+    type: array
+    description: virtctl CLI arguments to run
+  steps:
+    - name: ansible-lint
+      image: "$(params.ansible-lint-image)"
+      command: ["/opt/app-root/bin/ansible-lint","-x","$(params.SKIP_LIST)"]
+      args: ["$(params.ARGS)"]

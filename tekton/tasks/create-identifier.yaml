@@ -1,0 +1,15 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: create-id
+spec:
+  results:
+  - name: pipeline-id 
+    description: Identifier that can be used with this pipeline
+  steps:
+    - name: create-id
+      image: quay.io/openshift/origin-cli:latest 
+      script: |
+        #!/bin/bash
+        uuidgen | tee /tekton/results/pipeline-id
