@@ -90,22 +90,23 @@ spec:
 ##           value: "180"
 ##       runAfter:
 ##         - create-vmi
-#     - name: run-ansible
-#       workspaces:
-#         - name: playbooks
-#           workspace: ansible-playbooks
-#       taskSpec:
-#         workspaces:
-#           - name: playbooks
-#             description: place that holds the playbooks
-#         steps:
-#           - name: requirements
-#             image: quay.io/tauerbec/ansible 
-#             script: |
-#               #!/bin/bash
-#               set -e
-#               ansible-galaxy install -r $(workspaces.playbooks.path)/ansible/requirements.yml -p $(workspaces.playbooks.path)/ansible/roles
-#               chmod 700 $(workspaces.playbooks.path)/ansible/files/id_rsa
+     - name: run-ansible
+       workspaces:
+         - name: playbooks
+           workspace: ansible-playbooks
+       taskSpec:
+         workspaces:
+           - name: playbooks
+             description: place that holds the playbooks
+         steps:
+           - name: requirements
+             image: quay.io/tauerbec/ansible 
+             script: |
+               #!/bin/bash
+               set -e
+               ansible-galaxy install -r $(workspaces.playbooks.path)/ansible/requirements.yml -p $(workspaces.playbooks.path)/ansible/roles
+               ls -la $(workspaces.playbooks.path)/ansible/files
+               chmod 700 $(workspaces.playbooks.path)/ansible/files/id_rsa
 #           - name: get-ip
 #             image: quay.io/openshift/origin-cli
 #             script: |
@@ -122,6 +123,6 @@ spec:
 #               - -i 
 #               - $(workspaces.playbooks.path)/ansible/inventory 
 #               - $(workspaces.playbooks.path)/ansible/playbook.yml
-#       runAfter:
+       runAfter:
 ##         - wait-for-vm
-#         - get-playbooks
+         - get-playbooks
