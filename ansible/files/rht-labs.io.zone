@@ -19,7 +19,7 @@ t1                      IN      CNAME   test1
 test2                   IN      A       192.168.25.22
 test3                   IN      A       192.168.25.23
 test4                   IN      A       192.168.25.24
-myapp                   IN      A       10.217.4.35
+my-app                   IN      A       10.217.4.35
 
 ; Mail server MX record
 rht-labs.io.            IN      MX      10      mail.rht-labs.io.
