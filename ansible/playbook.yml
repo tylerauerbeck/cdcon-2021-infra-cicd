@@ -21,6 +21,11 @@
         owner: root
         group: root
         mode: '0644'
+    - name: Update forwarder
+      lineinefile:
+        path: /etc/named/named.conf.options
+        line: "        forwarders { 10.217.4.10; };"
+        lineafter: "options {"
     - name: Add zone to conf
       blockinfile:
         path: /etc/named.conf
