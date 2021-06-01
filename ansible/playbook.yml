@@ -3,4 +3,4 @@
 - hosts: dns-server 
   roles:
     - role: infra-ansible/roles/dns/config-dns-server-bind
-#    - role: infra-ansible/roles/dns/manage-dns-zones-bind
+    - role: infra-ansible/roles/dns/manage-dns-zones-bind
