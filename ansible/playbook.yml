@@ -14,14 +14,14 @@
         - /etc/named/named.conf.acl
         - /etc/named/named.conf.tsig-keys
         - /etc/named/named.conf.view
-#    - name: Update zone file
-#      copy:
-#        src: "{{ inventory_dir }}/../files/rht-labs.io.zone
-#        dest: /var/named/rht-labs.io.zone
-#        owner: root
-#        group: root
-#        mode: '0644'
-#    - name: Restart service
-#      service:
-#        name: named
-#        state: restarted      
+    - name: Update zone file
+      copy:
+        src: "{{ inventory_dir }}/../files/rht-labs.io.zone"
+        dest: /var/named/rht-labs.io.zone
+        owner: root
+        group: root
+        mode: '0644'
+    - name: Restart service
+      service:
+        name: named
+        state: restarted      
