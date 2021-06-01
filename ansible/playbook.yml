@@ -3,4 +3,22 @@
 - hosts: dns-server 
   roles:
     - role: infra-ansible/roles/dns/config-dns-server-bind
-    - role: infra-ansible/roles/dns/manage-dns-zones-bind
+  tasks:
+    - name: Ensure files exist
+      file:
+        path: "{{ item }}"
+        owner: root
+        group: root
+        mode: '0644'
+      with_items:
+        - /etc/named/named.conf.acl
+        - /etc/named/named.conf.tsig-keys
+        - /etc/named/named.conf.view
+    - name: Update zone file
+      copy:
+        src: "{{ inventory_dir }}/../files/rht-labs.io.zone
+        dest: /var/named/rht-labs.io.zone
+        owner: root
+        group: root
+        mode: '0644'
+      
