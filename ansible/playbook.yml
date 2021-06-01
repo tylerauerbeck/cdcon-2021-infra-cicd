@@ -21,6 +21,15 @@
         owner: root
         group: root
         mode: '0644'
+    - name: Add zone to conf
+      blockinfile:
+        path: /etc/named.conf
+        insertbefore: BOF
+        block: |
+          zone "rht-labs.io" IN {
+              type master;
+              file "rht-labs.io.zone";
+          };
     - name: Restart service
       service:
         name: named
